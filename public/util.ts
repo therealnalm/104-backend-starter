@@ -80,6 +80,43 @@ const operations: Operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  {
+    name: "Get all journals",
+    endpoint: "/api/journals",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Create a Journal",
+    endpoint: "/api/journals",
+    method: "POST",
+    fields: { journal: "input" },
+  },
+  {
+    name: "Get a journal",
+    endpoint: "/api/journals/:name",
+    method: "GET",
+    fields: { name: "Input" },
+  },
+  {
+    name: "Add to Journal",
+    endpoint: "/api/journals/:name",
+    method: "POST",
+    fields: { name: "input", entry: "input" },
+  },
+  {
+    name: "Delete a journal",
+    endpoint: "/api/journals",
+    method: "DELETE",
+    fields: { name: "input" },
+  },
+  {
+    name: "Delete an entry from a journal",
+    endpoint: "/api/journals/:name/:_id",
+    method: "DELETE",
+    fields: { name: "input", _id: "input" },
+  },
+
   //
   // ...
   //

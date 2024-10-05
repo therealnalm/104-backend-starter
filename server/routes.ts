@@ -15,6 +15,37 @@ import { z } from "zod";
 class Routes {
   // Synchronize the concepts from `app.ts`.
 
+  @Router.post("/journals")
+  async createJournal(session: SessionDoc, journal: string) {
+    return { msg: `Create journal: ${journal}` };
+  }
+
+  @Router.get("/journals")
+  async getAllJournals(session: SessionDoc) {
+    return { msg: "Get all journals" };
+  }
+
+  @Router.post("journals/:name")
+  async addToJournal(session: SessionDoc, name: string, entry: Object) {
+    //come back and update entry object
+    return { msg: "Add entry to journal" };
+  }
+
+  @Router.get("journals/:name")
+  async getJournal(session: SessionDoc, name: string) {
+    return { msg: `Getting journal ${name}` };
+  }
+
+  @Router.delete("/journals")
+  async deleteJournal(session: SessionDoc, name: string) {
+    return { msg: `Delete journal named: ${name}` };
+  }
+
+  @Router.delete("/journals/:name/:_id")
+  async removeEntry(session: SessionDoc, name: string, _id: string) {
+    return { msg: `Removed post ${_id} from journal ${name}` };
+  }
+
   @Router.get("/session")
   async getSessionUser(session: SessionDoc) {
     const user = Sessioning.getUser(session);
