@@ -96,7 +96,7 @@ const operations: Operation[] = [
     name: "Get a journal",
     endpoint: "/api/journals/:name",
     method: "GET",
-    fields: { name: "Input" },
+    fields: { name: "input" },
   },
   {
     name: "Add to Journal",
