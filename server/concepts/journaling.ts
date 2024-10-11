@@ -23,11 +23,12 @@ export default class JournalingConcept {
   }
 
   async create(title: string, owner: ObjectId) {
+    await this.assertUniqueJournal(title, owner);
     const _id = await this.journals.createOne({ title, owner, objects: [] });
-    return { msg: "Journal created successfully!", title: await this.journals.readOne({ _id }) };
+    return { msg: "Journal created successfully!", journal: _id };
   }
 
-  async journalById(_id: ObjectId) {
+  async getJournalById(_id: ObjectId) {
     const journal = await this.journals.readOne({ _id });
     if (journal == null) {
       throw new NotFoundError(`No Journal found with id: ${_id.toString}`);
@@ -50,14 +51,14 @@ export default class JournalingConcept {
   async addObject(_id: ObjectId, object: Object) {
     const journal = await this.journals.readOne({ _id });
     if (journal == null) {
-      throw new NotFoundError(`No Journal found with id: ${_id.toString}`);
+      throw new NotFoundError(`No Journal found with that name`);
     }
     if (journal.objects.includes(object)) {
       throw new NotAllowedError(`${object.toString} already inside journal`);
     }
     journal.objects.push(object);
     await this.journals.partialUpdateOne({ _id }, { objects: journal.objects });
-    return { msg: "Journal successfully updated!" };
+    return { msg: "Added object succesfully!" };
   }
 
   async assertUniqueJournal(title: String, owner: ObjectId) {
@@ -66,6 +67,7 @@ export default class JournalingConcept {
     }
   }
 
+  //Removes an object from a specific journal
   async removeObject(_id: ObjectId, objectRem: Object) {
     const journal = await this.journals.readOne({ _id });
     if (journal == null) {
@@ -79,8 +81,31 @@ export default class JournalingConcept {
     return { msg: "Removed object succesfully!" };
   }
 
+  async removeObjectFromAll(objectRem: Object) {
+    const journals = await this.journals.readMany({ objects: objectRem });
+    if (!journals) {
+      throw new NotFoundError(`No Journal found containing: ${objectRem}`);
+    }
+
+    for (const journal of journals) {
+      const contents = journal.objects.filter((obj) => obj !== objectRem);
+      await this.journals.partialUpdateOne({ _id: journal._id }, { objects: contents }); //this could be very slow for a lot of journals
+    }
+    return { msg: "Succesfully removed entry from all journals!" };
+  }
+
   async delete(_id: ObjectId) {
     await this.journals.deleteOne({ _id });
     return { msg: "Journal deleted" };
+  }
+
+  async assertJournalContains(_id: ObjectId, object: ObjectId) {
+    const journal = await this.journals.readOne({ _id });
+    if (journal == null) {
+      throw new NotFoundError(`Journal was not found`);
+    }
+    if (!journal.objects.includes(object)) {
+      throw new NotFoundError(`Journal did not contain object: ${object}`);
+    }
   }
 }

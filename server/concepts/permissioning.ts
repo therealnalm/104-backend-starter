@@ -51,11 +51,19 @@ export default class PermissioningConcept {
    * @returns a list of all PermissionDocs that have user in list of users
    */
   async getAuthorizedActions(user: ObjectId) {
-    const userPerms = await this.perms.readMany({ users: { $elemMatch: { user } } });
-    if (userPerms == null) {
+    const userPerms = await this.perms.readMany({ users: user }); // This call doesn't work
+    if (!userPerms) {
       throw new NotFoundError(`No user found in perms: ${user.toString}`);
     }
     return userPerms;
+  }
+
+  async getAuthorizedUsers(_id: ObjectId) {
+    const objectPerms = await this.perms.readOne({ _id });
+    if (!objectPerms) {
+      throw new NotFoundError(`No permissions found associated with ${_id}`);
+    }
+    return objectPerms.users;
   }
   /**
    *
@@ -89,13 +97,19 @@ export default class PermissioningConcept {
     await this.perms.partialUpdateOne({ object }, { users: newUsers });
     return { msg: `removed user: ${user} from perm: ${object}!` };
   }
-
+  /**
+   *
+   * @Throws a notfounderror if the object does not have permissions set up
+   * @throws a NotAllowedError if the user does not have permissions for the Object
+   */
   async hasPerm(user: ObjectId, object: Object) {
     const objectPerms = await this.perms.readOne({ object });
+    console.log(objectPerms);
     if (objectPerms == null) {
-      throw new NotFoundError(`No user found in perms: ${object.toString}`);
+      throw new NotFoundError(`No permissions found for object: ${object.toString}`);
+    } else if (!objectPerms.users.some((id) => user.equals(id))) {
+      throw new NotAllowedError(`User ${user} does not have permissions for ${object}`);
     }
-    return objectPerms.users.includes(user);
   }
 
   async delPerm(object: Object) {
